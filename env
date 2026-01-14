@@ -1,0 +1,7 @@
+DATABASE_URL="postgresql://neondb_owner:npg_P6voaAdGU9Wi@ep-dry-feather-agve4r9f-pooler.c-2.eu-central-1.aws.neon.tech/neondb?sslmode=require&channel_binding=require"
+
+GMAIL_USER=nayir.saiddjae@gmail.com
+GMAIL_APP_PASSWORD=bzvd rzjv xxos xkvg
+
+EMAIL_FROM=nayir.saiddjae@gmail.com
+EMAIL_FROM_NAME=Tp-Saas
