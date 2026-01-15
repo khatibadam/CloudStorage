@@ -1,5 +1,9 @@
 import nodemailer from 'nodemailer'
 
+if (!process.env.GMAIL_USER || !process.env.GMAIL_APP_PASSWORD) {
+  console.warn('⚠️  Variables d\'environnement email manquantes');
+}
+
 const transporter = nodemailer.createTransport({
   service: 'gmail',
   auth: {
@@ -8,7 +12,11 @@ const transporter = nodemailer.createTransport({
   },
 })
 
-export async function sendOTPEmail(email: string) {
+type EmailResult = 
+  | { success: true; token: string }
+  | { success: false; error: unknown };
+
+export async function sendOTPEmail(email: string): Promise<EmailResult> {
   try {
     const token = Math.floor(100000 + Math.random() * 900000).toString()
     

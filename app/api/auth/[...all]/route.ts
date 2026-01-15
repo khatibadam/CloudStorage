@@ -1,4 +1,15 @@
-import { auth } from "@/lib/auth"
+import { NextRequest, NextResponse } from 'next/server';
 
-export const { GET, POST } = auth.handler
+export async function GET(req: NextRequest) {
+  return NextResponse.json(
+    { error: 'Cette route n\'est pas implémentée' },
+    { status: 404 }
+  );
+}
 
+export async function POST(req: NextRequest) {
+  return NextResponse.json(
+    { error: 'Cette route n\'est pas implémentée' },
+    { status: 404 }
+  );
+}

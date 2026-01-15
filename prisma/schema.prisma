@@ -14,6 +14,49 @@ model User {
   email String @unique()
   password String
   otpCodes OtpCode[]
+  subscription Subscription?
+  stripeCustomerId String? @unique
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now()) @updatedAt
+}
+
+model Subscription {
+  id String @id @default(cuid())
+  userId String @unique
+  user User @relation(fields: [userId], references: [id_user], onDelete: Cascade)
+  
+  stripeSubscriptionId String? @unique
+  stripeCustomerId String
+  stripePriceId String
+  stripeCurrentPeriodEnd DateTime?
+  
+  planType PlanType @default(FREE)
+  status SubscriptionStatus @default(INACTIVE)
+  storageLimit BigInt // en octets
+  storageUsed BigInt @default(0)
+  
+  cancelAtPeriodEnd Boolean @default(false)
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  @@index([userId])
+  @@index([stripeCustomerId])
+  @@index([stripeSubscriptionId])
+}
+
+enum PlanType {
+  FREE
+  STANDARD
+  PRO
+}
+
+enum SubscriptionStatus {
+  ACTIVE
+  INACTIVE
+  PAST_DUE
+  CANCELED
+  TRIALING
 }
 
 model OtpCode {

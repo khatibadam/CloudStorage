@@ -381,14 +381,6 @@ export type OtpCodeUncheckedUpdateManyWithoutUserNestedInput = {
   deleteMany?: Prisma.OtpCodeScalarWhereInput | Prisma.OtpCodeScalarWhereInput[]
 }
 
-export type DateTimeFieldUpdateOperationsInput = {
-  set?: Date | string
-}
-
-export type BoolFieldUpdateOperationsInput = {
-  set?: boolean
-}
-
 export type OtpCodeCreateWithoutUserInput = {
   id?: string
   code: string

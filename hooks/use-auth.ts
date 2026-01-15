@@ -4,7 +4,7 @@ import { useCallback, useRef, useSyncExternalStore } from "react"
 import { useRouter } from "next/navigation"
 
 interface User {
-  id: string
+  id_user: string
   email: string
   firstname: string
   lastname: string

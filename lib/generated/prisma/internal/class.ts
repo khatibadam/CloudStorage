@@ -20,7 +20,7 @@ const config: runtime.GetPrismaClientConfig = {
   "clientVersion": "7.2.0",
   "engineVersion": "0c8ef2ce45c83248ab3df073180d5eda9e8be7a3",
   "activeProvider": "postgresql",
-  "inlineSchema": "generator client {\n  provider = \"prisma-client\"\n  output   = \"../lib/generated/prisma\"\n}\n\ndatasource db {\n  provider = \"postgresql\"\n}\n\nmodel User {\n  id_user   String    @id @default(cuid())\n  firstname String\n  lastname  String\n  email     String    @unique()\n  password  String\n  otpCodes  OtpCode[]\n}\n\nmodel OtpCode {\n  id        String   @id @default(cuid())\n  email     String\n  code      String\n  expiresAt DateTime\n  verified  Boolean  @default(false)\n  createdAt DateTime @default(now())\n\n  user User? @relation(fields: [email], references: [email])\n\n  @@index([email])\n  @@index([code])\n}\n",
+  "inlineSchema": "generator client {\n  provider = \"prisma-client\"\n  output   = \"../lib/generated/prisma\"\n}\n\ndatasource db {\n  provider = \"postgresql\"\n}\n\nmodel User {\n  id_user          String        @id @default(cuid())\n  firstname        String\n  lastname         String\n  email            String        @unique()\n  password         String\n  otpCodes         OtpCode[]\n  subscription     Subscription?\n  stripeCustomerId String?       @unique\n  createdAt        DateTime      @default(now())\n  updatedAt        DateTime      @default(now()) @updatedAt\n}\n\nmodel Subscription {\n  id     String @id @default(cuid())\n  userId String @unique\n  user   User   @relation(fields: [userId], references: [id_user], onDelete: Cascade)\n\n  stripeSubscriptionId   String?   @unique\n  stripeCustomerId       String\n  stripePriceId          String\n  stripeCurrentPeriodEnd DateTime?\n\n  planType     PlanType           @default(FREE)\n  status       SubscriptionStatus @default(INACTIVE)\n  storageLimit BigInt // en octets\n  storageUsed  BigInt             @default(0)\n\n  cancelAtPeriodEnd Boolean @default(false)\n\n  createdAt DateTime @default(now())\n  updatedAt DateTime @updatedAt\n\n  @@index([userId])\n  @@index([stripeCustomerId])\n  @@index([stripeSubscriptionId])\n}\n\nenum PlanType {\n  FREE\n  STANDARD\n  PRO\n}\n\nenum SubscriptionStatus {\n  ACTIVE\n  INACTIVE\n  PAST_DUE\n  CANCELED\n  TRIALING\n}\n\nmodel OtpCode {\n  id        String   @id @default(cuid())\n  email     String\n  code      String\n  expiresAt DateTime\n  verified  Boolean  @default(false)\n  createdAt DateTime @default(now())\n\n  user User? @relation(fields: [email], references: [email])\n\n  @@index([email])\n  @@index([code])\n}\n",
   "runtimeDataModel": {
     "models": {},
     "enums": {},
@@ -28,7 +28,7 @@ const config: runtime.GetPrismaClientConfig = {
   }
 }
 
-config.runtimeDataModel = JSON.parse("{\"models\":{\"User\":{\"fields\":[{\"name\":\"id_user\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"firstname\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"lastname\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"email\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"password\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"otpCodes\",\"kind\":\"object\",\"type\":\"OtpCode\",\"relationName\":\"OtpCodeToUser\"}],\"dbName\":null},\"OtpCode\":{\"fields\":[{\"name\":\"id\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"email\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"code\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"expiresAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"verified\",\"kind\":\"scalar\",\"type\":\"Boolean\"},{\"name\":\"createdAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"user\",\"kind\":\"object\",\"type\":\"User\",\"relationName\":\"OtpCodeToUser\"}],\"dbName\":null}},\"enums\":{},\"types\":{}}")
+config.runtimeDataModel = JSON.parse("{\"models\":{\"User\":{\"fields\":[{\"name\":\"id_user\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"firstname\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"lastname\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"email\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"password\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"otpCodes\",\"kind\":\"object\",\"type\":\"OtpCode\",\"relationName\":\"OtpCodeToUser\"},{\"name\":\"subscription\",\"kind\":\"object\",\"type\":\"Subscription\",\"relationName\":\"SubscriptionToUser\"},{\"name\":\"stripeCustomerId\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"createdAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"updatedAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"}],\"dbName\":null},\"Subscription\":{\"fields\":[{\"name\":\"id\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"userId\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"user\",\"kind\":\"object\",\"type\":\"User\",\"relationName\":\"SubscriptionToUser\"},{\"name\":\"stripeSubscriptionId\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"stripeCustomerId\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"stripePriceId\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"stripeCurrentPeriodEnd\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"planType\",\"kind\":\"enum\",\"type\":\"PlanType\"},{\"name\":\"status\",\"kind\":\"enum\",\"type\":\"SubscriptionStatus\"},{\"name\":\"storageLimit\",\"kind\":\"scalar\",\"type\":\"BigInt\"},{\"name\":\"storageUsed\",\"kind\":\"scalar\",\"type\":\"BigInt\"},{\"name\":\"cancelAtPeriodEnd\",\"kind\":\"scalar\",\"type\":\"Boolean\"},{\"name\":\"createdAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"updatedAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"}],\"dbName\":null},\"OtpCode\":{\"fields\":[{\"name\":\"id\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"email\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"code\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"expiresAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"verified\",\"kind\":\"scalar\",\"type\":\"Boolean\"},{\"name\":\"createdAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"user\",\"kind\":\"object\",\"type\":\"User\",\"relationName\":\"OtpCodeToUser\"}],\"dbName\":null}},\"enums\":{},\"types\":{}}")
 
 async function decodeBase64AsWasm(wasmBase64: string): Promise<WebAssembly.Module> {
   const { Buffer } = await import('node:buffer')
@@ -183,6 +183,16 @@ export interface PrismaClient<
     * ```
     */
   get user(): Prisma.UserDelegate<ExtArgs, { omit: OmitOpts }>;
+
+  /**
+   * `prisma.subscription`: Exposes CRUD operations for the **Subscription** model.
+    * Example usage:
+    * ```ts
+    * // Fetch zero or more Subscriptions
+    * const subscriptions = await prisma.subscription.findMany()
+    * ```
+    */
+  get subscription(): Prisma.SubscriptionDelegate<ExtArgs, { omit: OmitOpts }>;
 
   /**
    * `prisma.otpCode`: Exposes CRUD operations for the **OtpCode** model.
