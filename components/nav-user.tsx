@@ -3,6 +3,7 @@
 import {
   IconCreditCard,
   IconDotsVertical,
+  IconLockAccessOff,
   IconLogout,
   IconNotification,
   IconUserCircle,
@@ -97,6 +98,12 @@ export function NavUser({
               <DropdownMenuItem>
                 <IconNotification />
                 Notifications
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => {
+                window.location.href = '/reset-password'
+              }}>
+                <IconLockAccessOff />
+                Changer le mot de passe
               </DropdownMenuItem>
             </DropdownMenuGroup>
             <DropdownMenuSeparator />
