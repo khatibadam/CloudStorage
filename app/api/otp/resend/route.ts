@@ -27,11 +27,19 @@ export async function POST(request: NextRequest) {
     const emailResult = await sendOTPEmail(email);
 
     if (!emailResult.success) {
+      console.error('Erreur email:', emailResult.error);
+      
+      const errorMessage = emailResult.error instanceof Error && emailResult.error.message.includes('Missing credentials')
+        ? 'Configuration email manquante. Vérifiez GMAIL_USER et GMAIL_APP_PASSWORD dans .env'
+        : 'Erreur lors de l\'envoi de l\'email';
+      
       return NextResponse.json(
-        { error: 'Erreur lors de l\'envoi de l\'email' },
+        { error: errorMessage },
         { status: 500 }
       );
     }
+
+    const token = emailResult.token;
 
     const expiresAt = new Date();
     expiresAt.setMinutes(expiresAt.getMinutes() + 10);
@@ -46,7 +54,7 @@ export async function POST(request: NextRequest) {
     await prisma.otpCode.create({
       data: {
         email,
-        code: emailResult.token,
+        code: token,
         expiresAt,
       }
     });

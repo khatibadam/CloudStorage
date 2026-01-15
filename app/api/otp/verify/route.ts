@@ -50,7 +50,7 @@ export async function POST(request: NextRequest) {
       success: true,
       message: 'Code vérifié avec succès',
       user: {
-        id: user?.id_user,
+        id_user: user?.id_user,
         email: user?.email,
         firstname: user?.firstname,
         lastname: user?.lastname

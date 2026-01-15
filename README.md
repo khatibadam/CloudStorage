@@ -1,12 +1,13 @@
-# TP Next.js SaaS
+# TP Next.js SaaS - Plateforme de Stockage Cloud
 
-Application SaaS développée avec Next.js 16, Prisma et PostgreSQL (Neon).
+Application SaaS développée avec Next.js 16, Prisma, PostgreSQL (Neon) et système d'abonnement Stripe
 
 ## Fonctionnalités
 
 - Authentification par email avec code OTP
 - Dashboard protégé par authentification
 - Interface utilisateur moderne avec Radix UI et Tailwind CSS
+- Système d'abonnement. 3 plans disponibles : Free (5Go); Standard (500Go); Pro (2To)
 
 ## Technologies
 
@@ -29,6 +30,19 @@ EMAIL_FROM=votre-email@gmail.com
 EMAIL_FROM_NAME=Nom de votre application
 ```
 
+## 🚀 Installation rapide
+
+```bash
+# Installer les dépendances
+npm install
+
+# Configurer les variables d'environnement
+# Faite une copie du fichier '.env.exemple', renommer-le '.env' et modifier les variables qu'elle contient
+
+# Démarrer l'application
+npm run dev
+```
+
 ## Déploiement
 
 Le projet est déployé sur [Vercel](https://vercel.com).
@@ -39,8 +53,9 @@ Le projet est déployé sur [Vercel](https://vercel.com).
   - Configuration de Prisma avec PostgreSQL (Neon)
   - Mise en place de Nodemailer pour l'envoi d'emails
   - Création de la structure des dossiers et composants
-  - Développement des pages (login, signup, dashboard, OTP)
+  - Développement des pages (login, signup, dashboard, OTP, pricing)
   - Intégration de Radix UI et Tailwind CSS
+  - Intégration complète de Stripe (Checkout, Webhooks, Portal)
 
 - **Nayir** - Maintenance et améliorations :
   - Résolution des problèmes techniques du système OTP
