@@ -7,8 +7,10 @@ export async function POST(request: Request) {
   try {
     const { currentPassword, newPassword } = await request.json()
 
-    // Vérifier que l'utilisateur est authentifié avec Auth.js v5
-    const session = await auth()
+    // Vérifier que l'utilisateur est authentifié avec Better Auth
+    const session = await auth.api.getSession({
+      headers: request.headers
+    })
 
     if (!session?.user?.email) {
       return NextResponse.json(
@@ -44,7 +46,7 @@ export async function POST(request: Request) {
 
     // Mettre à jour le mot de passe dans la base de données
     await prisma.user.update({
-      where: { id: user.id },
+      where: { id_user: user.id_user },
       data: { password: hashedPassword }
     })
 
