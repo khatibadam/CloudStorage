@@ -73,3 +73,7 @@ Le projet est déployé sur [Vercel](https://vercel.com).
   - Ajout du bouton déconnexion fonctionnel
   - Timeout de 60s sur le renvoi de code OTP
   - Validation mot de passe (8 caractères minimum)
+  - Correction navigation sidebar (certain liens fonctionnels)
+  - Nettoyage sidebar (suppression éléments inutiles)
+  - Page Analytics avec statistiques de stockage
+  - Affichage du stockage sur la carte d'abonnement (fake stockage)

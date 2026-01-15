@@ -1,13 +1,11 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Check, ArrowLeft } from 'lucide-react';
-import Link from 'next/link';
 import { toast } from 'sonner';
-import { useAuth } from '@/hooks/use-auth';
 
 const plans = [
   {
@@ -52,10 +50,34 @@ const plans = [
   },
 ];
 
+interface User {
+  id_user: string;
+  email: string;
+  firstname: string;
+  lastname: string;
+}
+
 export default function PricingPage() {
   const router = useRouter();
-  const { user, isReady } = useAuth();
+  const [user, setUser] = useState<User | null>(null);
+  const [isReady, setIsReady] = useState(false);
   const [loading, setLoading] = useState<string | null>(null);
+
+  useEffect(() => {
+    // Vérifier directement sessionStorage au montage
+    const storedUser = sessionStorage.getItem('user');
+    if (storedUser && storedUser !== 'undefined' && storedUser !== 'null') {
+      try {
+        const parsed = JSON.parse(storedUser);
+        if (parsed && parsed.id_user) {
+          setUser(parsed);
+        }
+      } catch {
+        // Données invalides
+      }
+    }
+    setIsReady(true);
+  }, []);
 
   const handleSubscribe = async (planType: string) => {
     if (planType === 'FREE') {
@@ -115,13 +137,72 @@ export default function PricingPage() {
     }
   };
 
+  const handleBack = () => {
+    if (user) {
+      router.push('/dashboard');
+    } else {
+      router.push('/');
+    }
+  };
+
+  const handleManageSubscription = async () => {
+    let currentUser = user;
+
+    if (!currentUser && typeof window !== 'undefined') {
+      const userStr = sessionStorage.getItem('user');
+      if (userStr) {
+        try {
+          currentUser = JSON.parse(userStr);
+        } catch (e) {
+          console.error('Erreur parsing user:', e);
+        }
+      }
+    }
+
+    if (!currentUser || !currentUser.id_user) {
+      toast.error('Veuillez vous connecter');
+      router.push('/login');
+      return;
+    }
+
+    try {
+      const response = await fetch('/api/stripe/create-portal-session', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ userId: currentUser.id_user }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || 'Erreur');
+      }
+
+      window.location.href = data.url;
+    } catch (error: any) {
+      toast.error(error.message || 'Erreur lors de l\'ouverture du portail');
+    }
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-background to-muted/20 py-20 px-4">
       <div className="max-w-7xl mx-auto">
-        <Link href="/" className="inline-flex items-center gap-2 text-muted-foreground hover:text-foreground mb-8 transition-colors">
-          <ArrowLeft className="h-4 w-4" />
-          Retour
-        </Link>
+        <div className="flex items-center justify-between mb-8">
+          <button
+            onClick={handleBack}
+            className="inline-flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors"
+          >
+            <ArrowLeft className="h-4 w-4" />
+            Retour
+          </button>
+          {isReady && user && (
+            <Button variant="outline" onClick={handleManageSubscription}>
+              Gérer mon abonnement
+            </Button>
+          )}
+        </div>
         <div className="text-center mb-16">
           <h1 className="text-4xl md:text-5xl font-bold mb-4">
             Choisissez votre plan

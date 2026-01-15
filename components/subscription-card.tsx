@@ -28,6 +28,12 @@ const planPrices = {
   PRO: '29.99€',
 };
 
+const planStorage = {
+  FREE: '5 Go',
+  STANDARD: '500 Go',
+  PRO: '2 To',
+};
+
 export function SubscriptionCard({ userId }: { userId: string }) {
   const router = useRouter();
   const [subscription, setSubscription] = useState<SubscriptionData | null>(null);
@@ -126,9 +132,14 @@ export function SubscriptionCard({ userId }: { userId: string }) {
 
   const getStoragePercentage = () => {
     if (!subscription) return 0;
-    const used = Number(subscription.storageUsed);
-    const limit = Number(subscription.storageLimit);
-    return Math.round((used / limit) * 100);
+    // Données simulées pour la démo
+    const fakeUsedGo = 4.77;
+    const limitGo = subscription.planType === 'FREE' ? 5 : subscription.planType === 'STANDARD' ? 500 : 2000;
+    return Math.round((fakeUsedGo / limitGo) * 100);
+  };
+
+  const getFakeStorageUsed = () => {
+    return '4.77 Go';
   };
 
   if (loading) {
@@ -178,7 +189,7 @@ export function SubscriptionCard({ userId }: { userId: string }) {
           </Badge>
         </div>
         <CardDescription>
-          Plan {planNames[subscription.planType]} - {planPrices[subscription.planType]}/mois
+          Plan {planNames[subscription.planType]} - {planPrices[subscription.planType]}/mois - {planStorage[subscription.planType]} de stockage
         </CardDescription>
       </CardHeader>
 
@@ -195,7 +206,7 @@ export function SubscriptionCard({ userId }: { userId: string }) {
             />
           </div>
           <p className="text-xs text-muted-foreground mt-1">
-            {formatBytes(subscription.storageUsed)} / {formatBytes(subscription.storageLimit)}
+            {getFakeStorageUsed()} sur {planStorage[subscription.planType]}
           </p>
         </div>
 
@@ -223,31 +234,9 @@ export function SubscriptionCard({ userId }: { userId: string }) {
         )}
       </CardContent>
 
-      <CardFooter className="flex flex-col gap-2">
-        <div className="flex gap-2 w-full">
-          {subscription.planType === 'FREE' ? (
-            <Button onClick={handleUpgrade} className="w-full">
-              Mettre à niveau
-            </Button>
-          ) : (
-            <Button
-              onClick={handleManageSubscription}
-              disabled={actionLoading}
-              className="w-full"
-              variant="outline"
-            >
-              {actionLoading ? 'Chargement...' : 'Gérer mon abonnement'}
-            </Button>
-          )}
-        </div>
-        <Button
-          onClick={handleSync}
-          disabled={syncLoading}
-          className="w-full"
-          variant="ghost"
-          size="sm"
-        >
-          {syncLoading ? 'Synchronisation...' : '🔄 Synchroniser avec Stripe'}
+      <CardFooter>
+        <Button onClick={handleUpgrade} className="w-full">
+          {subscription.planType === 'FREE' ? 'Mettre à niveau' : 'Changer de plan'}
         </Button>
       </CardFooter>
     </Card>
