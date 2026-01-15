@@ -1,8 +1,36 @@
+'use client';
+
+import { useState, useEffect } from 'react';
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Cloud, Lock, Zap, Shield, ArrowRight } from "lucide-react";
 
+interface User {
+  id_user: string;
+  email: string;
+  firstname: string;
+  lastname: string;
+}
+
 export default function HomePage() {
+  const [user, setUser] = useState<User | null>(null);
+  const [isReady, setIsReady] = useState(false);
+
+  useEffect(() => {
+    const storedUser = sessionStorage.getItem('user');
+    if (storedUser && storedUser !== 'undefined' && storedUser !== 'null') {
+      try {
+        const parsed = JSON.parse(storedUser);
+        if (parsed && parsed.id_user) {
+          setUser(parsed);
+        }
+      } catch {
+        // Données invalides
+      }
+    }
+    setIsReady(true);
+  }, []);
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted/20">
       {/* Header */}
@@ -13,12 +41,20 @@ export default function HomePage() {
             <span className="text-2xl font-bold">CloudStorage</span>
           </div>
           <div className="flex items-center gap-4">
-            <Link href="/login">
-              <Button variant="ghost">Connexion</Button>
-            </Link>
-            <Link href="/signup">
-              <Button>Commencer</Button>
-            </Link>
+            {isReady && user ? (
+              <Link href="/dashboard">
+                <Button>Mon Dashboard</Button>
+              </Link>
+            ) : isReady ? (
+              <>
+                <Link href="/login">
+                  <Button variant="ghost">Connexion</Button>
+                </Link>
+                <Link href="/signup">
+                  <Button>Commencer</Button>
+                </Link>
+              </>
+            ) : null}
           </div>
         </div>
       </header>
@@ -29,7 +65,7 @@ export default function HomePage() {
           Stockez vos fichiers en toute sécurité
         </h1>
         <p className="text-xl text-muted-foreground max-w-2xl mx-auto mb-8">
-          Une solution de stockage cloud simple, sécurisée et abordable. 
+          Une solution de stockage cloud simple, sécurisée et abordable.
           Commencez gratuitement avec 5 Go et évoluez selon vos besoins.
         </p>
         <div className="flex items-center justify-center gap-4">
@@ -39,11 +75,19 @@ export default function HomePage() {
               <ArrowRight className="h-4 w-4" />
             </Button>
           </Link>
-          <Link href="/signup">
-            <Button size="lg" variant="outline">
-              Essayer gratuitement
-            </Button>
-          </Link>
+          {isReady && user ? (
+            <Link href="/dashboard">
+              <Button size="lg" variant="outline">
+                Accéder à mon espace
+              </Button>
+            </Link>
+          ) : isReady ? (
+            <Link href="/signup">
+              <Button size="lg" variant="outline">
+                Essayer gratuitement
+              </Button>
+            </Link>
+          ) : null}
         </div>
       </section>
 
@@ -96,17 +140,29 @@ export default function HomePage() {
       <section className="container mx-auto px-4 py-20">
         <div className="bg-primary/5 rounded-3xl p-12 text-center border border-primary/10">
           <h2 className="text-3xl md:text-4xl font-bold mb-4">
-            Prêt à commencer ?
+            {user ? 'Bienvenue !' : 'Prêt à commencer ?'}
           </h2>
           <p className="text-xl text-muted-foreground mb-8 max-w-2xl mx-auto">
-            Créez votre compte gratuitement et profitez de 5 Go de stockage dès maintenant.
+            {user
+              ? 'Accédez à votre espace de stockage et gérez vos fichiers.'
+              : 'Créez votre compte gratuitement et profitez de 5 Go de stockage dès maintenant.'
+            }
           </p>
-          <Link href="/signup">
-            <Button size="lg" className="gap-2">
-              Créer un compte gratuit
-              <ArrowRight className="h-4 w-4" />
-            </Button>
-          </Link>
+          {isReady && user ? (
+            <Link href="/dashboard">
+              <Button size="lg" className="gap-2">
+                Aller au Dashboard
+                <ArrowRight className="h-4 w-4" />
+              </Button>
+            </Link>
+          ) : isReady ? (
+            <Link href="/signup">
+              <Button size="lg" className="gap-2">
+                Créer un compte gratuit
+                <ArrowRight className="h-4 w-4" />
+              </Button>
+            </Link>
+          ) : null}
         </div>
       </section>
     </div>
