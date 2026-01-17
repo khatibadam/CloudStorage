@@ -1,0 +1,426 @@
+{
+  "info": {
+    "_postman_id": "cloudstorage-api-v1",
+    "name": "CloudStorage API",
+    "description": "Collection Postman pour l'API CloudStorage SaaS - TP Next.js\n\n## Base URL\n- Local: http://localhost:3000\n- Production: https://votre-app.vercel.app\n\n## Authentification\nL'API utilise des tokens JWT stockés dans des cookies httpOnly.\nAprès un login réussi, les cookies sont automatiquement gérés par Postman.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:3000",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "Authentication",
+      "description": "Endpoints d'authentification (JWT)",
+      "item": [
+        {
+          "name": "Login",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"user@example.com\",\n  \"password\": \"password123\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/login",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "auth", "login"]
+            },
+            "description": "Authentifie l'utilisateur et génère les tokens JWT.\n\n**Request Body:**\n- `email` (string, required): Email de l'utilisateur\n- `password` (string, required): Mot de passe (min 8 caractères)\n\n**Response 200:**\n```json\n{\n  \"success\": true,\n  \"user\": {\n    \"id_user\": \"clxxx...\",\n    \"email\": \"user@example.com\",\n    \"firstname\": \"John\",\n    \"lastname\": \"Doe\"\n  },\n  \"subscription\": {\n    \"planType\": \"FREE\",\n    \"status\": \"ACTIVE\"\n  }\n}\n```\n\n**Errors:**\n- 400: Validation error\n- 401: Invalid credentials"
+          },
+          "response": []
+        },
+        {
+          "name": "Logout",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/logout",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "auth", "logout"]
+            },
+            "description": "Déconnecte l'utilisateur en supprimant les cookies JWT.\n\n**Response 200:**\n```json\n{\n  \"success\": true,\n  \"message\": \"Déconnexion réussie\"\n}\n```"
+          },
+          "response": []
+        },
+        {
+          "name": "Refresh Token",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/refresh",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "auth", "refresh"]
+            },
+            "description": "Rafraîchit les tokens JWT en utilisant le refresh token.\n\n**Response 200:**\n```json\n{\n  \"success\": true,\n  \"user\": {\n    \"id_user\": \"clxxx...\",\n    \"email\": \"user@example.com\",\n    \"firstname\": \"John\",\n    \"lastname\": \"Doe\"\n  }\n}\n```\n\n**Errors:**\n- 401: Refresh token missing or invalid"
+          },
+          "response": []
+        },
+        {
+          "name": "Get Current User",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/me",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "auth", "me"]
+            },
+            "description": "Récupère les informations de l'utilisateur authentifié.\n\n**Response 200:**\n```json\n{\n  \"user\": {\n    \"id_user\": \"clxxx...\",\n    \"email\": \"user@example.com\",\n    \"firstname\": \"John\",\n    \"lastname\": \"Doe\",\n    \"createdAt\": \"2024-01-15T10:30:00.000Z\"\n  },\n  \"subscription\": {\n    \"id\": \"clyyy...\",\n    \"planType\": \"STANDARD\",\n    \"status\": \"ACTIVE\",\n    \"storageLimit\": \"536870912000\",\n    \"storageUsed\": \"1073741824\"\n  }\n}\n```\n\n**Errors:**\n- 401: Not authenticated"
+          },
+          "response": []
+        },
+        {
+          "name": "Forgot Password",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"user@example.com\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/forgot-password",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "auth", "forgot-password"]
+            },
+            "description": "Envoie un email de réinitialisation de mot de passe.\n\n**Request Body:**\n- `email` (string, required): Email de l'utilisateur\n\n**Response 200:**\n```json\n{\n  \"success\": true,\n  \"message\": \"Si un compte existe avec cet email, vous recevrez un lien de réinitialisation.\"\n}\n```\n\n**Note:** Retourne toujours succès pour éviter l'énumération des comptes.\n\n**Errors:**\n- 400: Email invalide\n- 500: Erreur lors de l'envoi de l'email"
+          },
+          "response": []
+        },
+        {
+          "name": "Reset Password",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"user@example.com\",\n  \"token\": \"abc123...\",\n  \"password\": \"newSecurePassword123\",\n  \"confirmPassword\": \"newSecurePassword123\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/reset-password",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "auth", "reset-password"]
+            },
+            "description": "Réinitialise le mot de passe avec un token valide.\n\n**Request Body:**\n- `email` (string, required): Email de l'utilisateur\n- `token` (string, required): Token reçu par email\n- `password` (string, required): Nouveau mot de passe (min 8 caractères)\n- `confirmPassword` (string, required): Confirmation du nouveau mot de passe\n\n**Response 200:**\n```json\n{\n  \"success\": true,\n  \"message\": \"Mot de passe modifié avec succès\"\n}\n```\n\n**Errors:**\n- 400: Validation error / Passwords don't match\n- 401: Token invalide ou expiré\n- 500: Erreur serveur"
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Users",
+      "description": "Gestion des utilisateurs",
+      "item": [
+        {
+          "name": "Register",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"firstname\": \"John\",\n  \"lastname\": \"Doe\",\n  \"email\": \"john.doe@example.com\",\n  \"password\": \"securePassword123\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/users/register",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "users", "register"]
+            },
+            "description": "Crée un nouveau compte utilisateur.\n\n**Request Body:**\n- `firstname` (string, required): Prénom\n- `lastname` (string, required): Nom\n- `email` (string, required): Email unique\n- `password` (string, required): Mot de passe (min 8 caractères)\n\n**Response 201:**\n```json\n{\n  \"success\": true,\n  \"message\": \"Utilisateur créé avec succès\",\n  \"user\": {\n    \"id_user\": \"clxxx...\",\n    \"email\": \"john.doe@example.com\",\n    \"firstname\": \"John\",\n    \"lastname\": \"Doe\"\n  }\n}\n```\n\n**Errors:**\n- 400: Validation error\n- 409: Email already exists"
+          },
+          "response": []
+        },
+        {
+          "name": "Get Profile",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/users/profile",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "users", "profile"]
+            },
+            "description": "Récupère le profil complet de l'utilisateur connecté.\n\n**Response 200:**\n```json\n{\n  \"user\": {\n    \"id_user\": \"clxxx...\",\n    \"email\": \"user@example.com\",\n    \"firstname\": \"John\",\n    \"lastname\": \"Doe\",\n    \"createdAt\": \"2024-01-15T10:30:00.000Z\",\n    \"updatedAt\": \"2024-01-20T15:45:00.000Z\",\n    \"subscription\": {\n      \"planType\": \"STANDARD\",\n      \"status\": \"ACTIVE\",\n      \"storageLimit\": \"536870912000\",\n      \"storageUsed\": \"1073741824\"\n    }\n  }\n}\n```\n\n**Errors:**\n- 401: Not authenticated"
+          },
+          "response": []
+        },
+        {
+          "name": "Update Profile",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"firstname\": \"Johnny\",\n  \"lastname\": \"Doe\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/users/profile",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "users", "profile"]
+            },
+            "description": "Met à jour le profil de l'utilisateur connecté.\n\n**Request Body:**\n- `firstname` (string, optional): Nouveau prénom\n- `lastname` (string, optional): Nouveau nom\n\n**Response 200:**\n```json\n{\n  \"success\": true,\n  \"message\": \"Profil mis à jour avec succès\",\n  \"user\": {\n    \"id_user\": \"clxxx...\",\n    \"email\": \"user@example.com\",\n    \"firstname\": \"Johnny\",\n    \"lastname\": \"Doe\"\n  }\n}\n```\n\n**Errors:**\n- 400: Validation error\n- 401: Not authenticated"
+          },
+          "response": []
+        },
+        {
+          "name": "Change Password",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"currentPassword\": \"oldPassword123\",\n  \"newPassword\": \"newSecurePassword456\",\n  \"confirmPassword\": \"newSecurePassword456\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/users/password",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "users", "password"]
+            },
+            "description": "Change le mot de passe de l'utilisateur connecté.\n\n**Request Body:**\n- `currentPassword` (string, required): Mot de passe actuel\n- `newPassword` (string, required): Nouveau mot de passe (min 8 caractères)\n- `confirmPassword` (string, required): Confirmation du nouveau mot de passe\n\n**Response 200:**\n```json\n{\n  \"success\": true,\n  \"message\": \"Mot de passe modifié avec succès\"\n}\n```\n\n**Errors:**\n- 400: Validation error / Passwords don't match\n- 401: Current password incorrect"
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "OTP",
+      "description": "Authentification à deux facteurs par code OTP",
+      "item": [
+        {
+          "name": "Send OTP",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"user@example.com\",\n  \"password\": \"password123\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/otp/send",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "otp", "send"]
+            },
+            "description": "Vérifie les credentials et envoie un code OTP par email.\n\n**Request Body:**\n- `email` (string, required): Email de l'utilisateur\n- `password` (string, required): Mot de passe\n\n**Response 200:**\n```json\n{\n  \"success\": true,\n  \"message\": \"Code OTP envoyé avec succès\"\n}\n```\n\n**Errors:**\n- 400: Email/password missing\n- 401: Invalid password\n- 404: User not found"
+          },
+          "response": []
+        },
+        {
+          "name": "Verify OTP",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"user@example.com\",\n  \"code\": \"123456\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/otp/verify",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "otp", "verify"]
+            },
+            "description": "Vérifie le code OTP et authentifie l'utilisateur.\n\n**Request Body:**\n- `email` (string, required): Email de l'utilisateur\n- `code` (string, required): Code OTP à 6 chiffres\n\n**Response 200:**\n```json\n{\n  \"success\": true,\n  \"message\": \"Code vérifié avec succès\",\n  \"user\": {\n    \"id_user\": \"clxxx...\",\n    \"email\": \"user@example.com\",\n    \"firstname\": \"John\",\n    \"lastname\": \"Doe\"\n  }\n}\n```\n\n**Errors:**\n- 400: Email/code missing\n- 401: Invalid or expired code"
+          },
+          "response": []
+        },
+        {
+          "name": "Resend OTP",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"user@example.com\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/otp/resend",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "otp", "resend"]
+            },
+            "description": "Renvoie un nouveau code OTP (cooldown de 60 secondes).\n\n**Request Body:**\n- `email` (string, required): Email de l'utilisateur\n\n**Response 200:**\n```json\n{\n  \"success\": true,\n  \"message\": \"Nouveau code envoyé\"\n}\n```\n\n**Errors:**\n- 400: Email missing\n- 429: Too many requests (60s cooldown)"
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Stripe",
+      "description": "Gestion des paiements et abonnements Stripe",
+      "item": [
+        {
+          "name": "Create Checkout Session",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"planType\": \"STANDARD\",\n  \"userId\": \"clxxx...\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/stripe/create-checkout-session",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "stripe", "create-checkout-session"]
+            },
+            "description": "Crée une session de paiement Stripe Checkout.\n\n**Request Body:**\n- `planType` (string, required): Type de plan ('STANDARD' ou 'PRO')\n- `userId` (string, required): ID de l'utilisateur\n\n**Response 200:**\n```json\n{\n  \"url\": \"https://checkout.stripe.com/c/pay/cs_xxx...\"\n}\n```\n\n**Errors:**\n- 400: Invalid plan type\n- 500: Stripe error"
+          },
+          "response": []
+        },
+        {
+          "name": "Create Portal Session",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"customerId\": \"cus_xxx...\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/stripe/create-portal-session",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "stripe", "create-portal-session"]
+            },
+            "description": "Crée une session vers le portail client Stripe.\n\n**Request Body:**\n- `customerId` (string, required): ID client Stripe\n\n**Response 200:**\n```json\n{\n  \"url\": \"https://billing.stripe.com/p/session/xxx...\"\n}\n```\n\n**Errors:**\n- 400: Customer ID missing\n- 500: Stripe error"
+          },
+          "response": []
+        },
+        {
+          "name": "Webhook (Stripe Events)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "stripe-signature",
+                "value": "whsec_xxx..."
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"type\": \"checkout.session.completed\",\n  \"data\": {\n    \"object\": {}\n  }\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/stripe/webhooks",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "stripe", "webhooks"]
+            },
+            "description": "Endpoint pour les webhooks Stripe. Ne pas appeler directement.\n\n**Événements gérés:**\n- `checkout.session.completed`: Abonnement créé\n- `customer.subscription.created`: Abonnement créé\n- `customer.subscription.updated`: Abonnement mis à jour\n- `customer.subscription.deleted`: Abonnement annulé\n- `invoice.payment_succeeded`: Paiement réussi\n- `invoice.payment_failed`: Paiement échoué\n\n**Response 200:**\n```json\n{\n  \"received\": true\n}\n```"
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Subscription",
+      "description": "Gestion des abonnements",
+      "item": [
+        {
+          "name": "Get Subscription",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/subscription?userId=clxxx...",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "subscription"],
+              "query": [
+                {
+                  "key": "userId",
+                  "value": "clxxx..."
+                }
+              ]
+            },
+            "description": "Récupère les détails de l'abonnement d'un utilisateur.\n\n**Query Parameters:**\n- `userId` (string, required): ID de l'utilisateur\n\n**Response 200:**\n```json\n{\n  \"subscription\": {\n    \"id\": \"clyyy...\",\n    \"planType\": \"STANDARD\",\n    \"status\": \"ACTIVE\",\n    \"storageLimit\": \"536870912000\",\n    \"storageUsed\": \"1073741824\",\n    \"stripeCurrentPeriodEnd\": \"2024-02-15T10:30:00.000Z\",\n    \"cancelAtPeriodEnd\": false\n  }\n}\n```\n\n**Errors:**\n- 400: User ID missing\n- 404: Subscription not found"
+          },
+          "response": []
+        },
+        {
+          "name": "Sync Subscription",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"userId\": \"clxxx...\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/subscription/sync",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "subscription", "sync"]
+            },
+            "description": "Synchronise l'abonnement avec Stripe.\n\n**Request Body:**\n- `userId` (string, required): ID de l'utilisateur\n\n**Response 200:**\n```json\n{\n  \"success\": true,\n  \"subscription\": {\n    \"planType\": \"STANDARD\",\n    \"status\": \"ACTIVE\"\n  }\n}\n```\n\n**Errors:**\n- 400: User ID missing\n- 404: User not found"
+          },
+          "response": []
+        }
+      ]
+    }
+  ]
+}

@@ -38,7 +38,7 @@ export default function AnalyticsPage() {
         <header className="flex h-16 shrink-0 items-center gap-2 border-b px-4">
           <SidebarTrigger className="-ml-1" />
           <Separator orientation="vertical" className="mr-2 data-[orientation=vertical]:h-4" />
-          <h1 className="text-lg font-semibold">Analytics</h1>
+          <h1 className="text-lg font-semibold">Statistiques</h1>
         </header>
         <div className="flex flex-1 flex-col gap-4 p-4">
           {/* Stats générales */}
@@ -119,7 +119,7 @@ export default function AnalyticsPage() {
             <Card>
               <CardHeader>
                 <CardTitle>Répartition par type</CardTitle>
-                <CardDescription>Arabe utilisé par catégorie</CardDescription>
+                <CardDescription>Espace utilisé par catégorie</CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="space-y-2">

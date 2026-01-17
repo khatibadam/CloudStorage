@@ -72,7 +72,8 @@ export function OTPForm({ ...props }: React.ComponentProps<typeof Card>) {
       if (response.ok) {
         toast.success('Code vérifié avec succès')
         sessionStorage.removeItem('otp-email')
-        sessionStorage.setItem('user', JSON.stringify(data.user))
+        // Les tokens JWT sont maintenant stockés dans des cookies httpOnly
+        // Plus besoin de stocker les données utilisateur dans sessionStorage
         setTimeout(() => {
           window.location.href = "/dashboard"
         }, 1000)

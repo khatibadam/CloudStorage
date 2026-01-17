@@ -1,51 +1,106 @@
-import { MRegister } from '@/app/middleware/register'
-import { prisma } from '@/lib/prisma'
-import type { IRegister } from '@/app/interfaces/user'
-import { ArgonHash } from '@/lib/argon2i'
+import { NextRequest, NextResponse } from 'next/server';
+import { prisma } from '@/lib/prisma';
+import { ArgonHash } from '@/lib/argon2i';
+import { z } from 'zod';
 
-export async function POST(req: Request) {
-    const { firstname, lastname, email, password, confirmPassword } : IRegister = await req.json()
+const registerSchema = z.object({
+  firstname: z.string()
+    .min(2, 'Le prénom doit contenir au moins 2 caractères')
+    .max(50, 'Le prénom ne peut pas dépasser 50 caractères')
+    .regex(/^[a-zA-ZÀ-ÿ\s-]+$/, 'Le prénom contient des caractères invalides'),
+  lastname: z.string()
+    .min(2, 'Le nom doit contenir au moins 2 caractères')
+    .max(50, 'Le nom ne peut pas dépasser 50 caractères')
+    .regex(/^[a-zA-ZÀ-ÿ\s-]+$/, 'Le nom contient des caractères invalides'),
+  email: z.string()
+    .email('Email invalide')
+    .max(100, 'L\'email ne peut pas dépasser 100 caractères'),
+  password: z.string()
+    .min(8, 'Le mot de passe doit contenir au moins 8 caractères')
+    .max(100, 'Le mot de passe ne peut pas dépasser 100 caractères'),
+  confirmPassword: z.string()
+    .min(1, 'La confirmation du mot de passe est requise'),
+}).refine((data) => data.password === data.confirmPassword, {
+  message: 'Les mots de passe ne correspondent pas',
+  path: ['confirmPassword'],
+});
 
-    const middle = MRegister({ firstname, lastname, email, password, confirmPassword })
+/**
+ * POST /api/users/register
+ * Crée un nouveau compte utilisateur
+ *
+ * @body { firstname: string, lastname: string, email: string, password: string, confirmPassword: string }
+ * @returns { success: boolean, message: string, user: object }
+ */
+export async function POST(request: NextRequest) {
+  try {
+    const body = await request.json();
 
-    if (middle.length > 0) {
-        return Response.json(middle)
+    // Validation avec Zod
+    const validation = registerSchema.safeParse(body);
+    if (!validation.success) {
+      return NextResponse.json(
+        { error: validation.error.errors[0].message },
+        { status: 400 }
+      );
     }
 
-    try{
-        const existingUser = await prisma.user.findUnique({
-            where: { email }
-        })
+    const { firstname, lastname, email, password } = validation.data;
 
-        if (existingUser) {
-            return Response.json({ error: true, message: 'Email déjà utilisé', code: 'E03' })
-        }
+    // Normalisation de l'email
+    const normalizedEmail = email.toLowerCase().trim();
 
-        const ps : string | undefined = await ArgonHash(password)
+    // Vérification si l'email existe déjà
+    const existingUser = await prisma.user.findUnique({
+      where: { email: normalizedEmail }
+    });
 
-        if (ps === undefined) {
-            return Response.json({ error: true, message:'error message', code:'E02'})
-        }
-
-        await prisma.user.create({
-            data: {
-                firstname: firstname,
-                lastname: lastname,
-                email: email,
-                password: ps as string,
-            },
-        })
-
-        return Response.json({ error: false, data: {
-            firstname: firstname,
-            lastname: lastname,
-            email: email,
-            password: ps as string,
-        }})
-    } catch(e) {
-        console.log(e)
-        return Response.json({ error: true, message:'error', code:'E02'})
+    if (existingUser) {
+      return NextResponse.json(
+        { error: 'Cet email est déjà utilisé' },
+        { status: 409 }
+      );
     }
 
-    return Response.json({ message: 'Hello World'})
+    // Hashage du mot de passe avec Argon2
+    const hashedPassword = await ArgonHash(password);
+
+    if (!hashedPassword) {
+      console.error('Erreur lors du hashage du mot de passe');
+      return NextResponse.json(
+        { error: 'Erreur lors de la création du compte' },
+        { status: 500 }
+      );
+    }
+
+    // Création de l'utilisateur
+    const user = await prisma.user.create({
+      data: {
+        firstname: firstname.trim(),
+        lastname: lastname.trim(),
+        email: normalizedEmail,
+        password: hashedPassword,
+      },
+      select: {
+        id_user: true,
+        firstname: true,
+        lastname: true,
+        email: true,
+        createdAt: true,
+      },
+    });
+
+    return NextResponse.json({
+      success: true,
+      message: 'Compte créé avec succès',
+      user,
+    }, { status: 201 });
+
+  } catch (error) {
+    console.error('Erreur lors de l\'inscription:', error);
+    return NextResponse.json(
+      { error: 'Erreur serveur' },
+      { status: 500 }
+    );
+  }
 }

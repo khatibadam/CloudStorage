@@ -24,12 +24,12 @@ import { useAuth } from "@/hooks/use-auth"
 const data = {
   navMain: [
     {
-      title: "Dashboard",
+      title: "Tableau de bord",
       url: "/dashboard",
       icon: IconDashboard,
     },
     {
-      title: "Analytics",
+      title: "Statistiques",
       url: "/analytics",
       icon: IconChartBar,
     },

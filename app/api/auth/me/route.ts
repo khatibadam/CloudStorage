@@ -1,20 +1,26 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
+import { getAuthUser } from '@/lib/jwt';
 
-export async function GET(req: NextRequest) {
+/**
+ * GET /api/auth/me
+ * Récupère les informations de l'utilisateur authentifié
+ *
+ * @returns { user: object, subscription: object | null }
+ */
+export async function GET() {
   try {
-    const { searchParams } = new URL(req.url);
-    const userId = searchParams.get('userId');
+    const authUser = await getAuthUser();
 
-    if (!userId) {
+    if (!authUser) {
       return NextResponse.json(
-        { error: 'userId manquant' },
-        { status: 400 }
+        { error: 'Non authentifié' },
+        { status: 401 }
       );
     }
 
     const user = await prisma.user.findUnique({
-      where: { id_user: userId },
+      where: { id_user: authUser.userId },
       include: { subscription: true },
     });
 
@@ -29,29 +35,26 @@ export async function GET(req: NextRequest) {
       user: {
         id_user: user.id_user,
         email: user.email,
-        stripeCustomerId: user.stripeCustomerId,
+        firstname: user.firstname,
+        lastname: user.lastname,
+        createdAt: user.createdAt,
       },
       subscription: user.subscription ? {
         id: user.subscription.id,
         planType: user.subscription.planType,
         status: user.subscription.status,
-        stripeSubscriptionId: user.subscription.stripeSubscriptionId,
-        stripeCustomerId: user.subscription.stripeCustomerId,
-        stripePriceId: user.subscription.stripePriceId,
         storageLimit: user.subscription.storageLimit.toString(),
         storageUsed: user.subscription.storageUsed.toString(),
         stripeCurrentPeriodEnd: user.subscription.stripeCurrentPeriodEnd,
         cancelAtPeriodEnd: user.subscription.cancelAtPeriodEnd,
       } : null,
     });
-  } catch (error: any) {
-    console.error('Erreur debug:', error);
+
+  } catch (error) {
+    console.error('Erreur lors de la récupération du profil:', error);
     return NextResponse.json(
       { error: 'Erreur serveur' },
       { status: 500 }
     );
   }
 }
-
-
-

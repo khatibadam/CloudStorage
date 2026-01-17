@@ -23,7 +23,6 @@ export function LoginForm({
   className,
   ...props
 }: React.ComponentProps<"div">) {
-
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
   const [loading, setLoading] = useState(false)
@@ -88,10 +87,19 @@ export function LoginForm({
                   placeholder="email@gmail.com"
                   required
                   disabled={loading}
+                  autoComplete="email"
                 />
               </Field>
               <Field>
-                <FieldLabel htmlFor="password">Mot de passe</FieldLabel>
+                <div className="flex items-center justify-between">
+                  <FieldLabel htmlFor="password">Mot de passe</FieldLabel>
+                  <Link
+                    href="/forgot-password"
+                    className="text-sm text-primary hover:underline"
+                  >
+                    Mot de passe oublié ?
+                  </Link>
+                </div>
                 <Input
                   id="password"
                   type="password"
@@ -100,6 +108,7 @@ export function LoginForm({
                   placeholder="Votre mot de passe"
                   required
                   disabled={loading}
+                  autoComplete="current-password"
                 />
               </Field>
               <Field>
@@ -108,7 +117,7 @@ export function LoginForm({
                   disabled={loading}
                   className="w-full"
                 >
-                  {loading ? 'Connexion...' : 'Se connecter'}
+                  {loading ? 'Envoi du code...' : 'Recevoir le code'}
                 </Button>
               </Field>
               <p className="text-center text-sm text-muted-foreground">
