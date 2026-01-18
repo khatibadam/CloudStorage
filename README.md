@@ -156,6 +156,8 @@ tp-nextjs-saas/
 
 ## Documentation API
 
+Toute la documentation API de CloudStorage est disponible via Postman : https://documenter.getpostman.com/view/51595306/2sBXVig9sM
+
 ### Authentification
 
 L'API utilise des tokens JWT stockes dans des cookies httpOnly securises.
