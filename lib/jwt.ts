@@ -1,9 +1,30 @@
 import { SignJWT, jwtVerify, JWTPayload } from 'jose';
 import { cookies } from 'next/headers';
 
-const JWT_SECRET = new TextEncoder().encode(
-  process.env.JWT_SECRET || 'your-super-secret-key-change-in-production'
-);
+// Lazy-load du secret pour éviter les erreurs pendant le build
+let cachedSecret: Uint8Array | null = null;
+
+const getJwtSecret = (): Uint8Array => {
+  if (cachedSecret) {
+    return cachedSecret;
+  }
+
+  const secret = process.env.JWT_SECRET;
+
+  if (!secret && process.env.NODE_ENV === 'production') {
+    throw new Error('JWT_SECRET environment variable is required in production.');
+  }
+
+  // En développement, utiliser une clé par défaut si non définie (avec warning)
+  if (!secret) {
+    console.warn('⚠️  JWT_SECRET non défini - utilisation d\'une clé par défaut (DEV uniquement)');
+    cachedSecret = new TextEncoder().encode('dev-secret-key-do-not-use-in-production-min32chars');
+    return cachedSecret;
+  }
+
+  cachedSecret = new TextEncoder().encode(secret);
+  return cachedSecret;
+};
 
 const ACCESS_TOKEN_EXPIRY = '15m';
 const REFRESH_TOKEN_EXPIRY = '7d';
@@ -29,7 +50,7 @@ export async function generateAccessToken(payload: { userId: string; email: stri
     .setProtectedHeader({ alg: 'HS256' })
     .setIssuedAt()
     .setExpirationTime(ACCESS_TOKEN_EXPIRY)
-    .sign(JWT_SECRET);
+    .sign(getJwtSecret());
 }
 
 /**
@@ -40,7 +61,7 @@ export async function generateRefreshToken(payload: { userId: string; email: str
     .setProtectedHeader({ alg: 'HS256' })
     .setIssuedAt()
     .setExpirationTime(REFRESH_TOKEN_EXPIRY)
-    .sign(JWT_SECRET);
+    .sign(getJwtSecret());
 }
 
 /**
@@ -48,7 +69,7 @@ export async function generateRefreshToken(payload: { userId: string; email: str
  */
 export async function verifyToken(token: string): Promise<TokenPayload | null> {
   try {
-    const { payload } = await jwtVerify(token, JWT_SECRET);
+    const { payload } = await jwtVerify(token, getJwtSecret());
     return payload as TokenPayload;
   } catch (error) {
     return null;

@@ -53,6 +53,8 @@ export const AnyNull = runtime.AnyNull
 export const ModelName = {
   User: 'User',
   Subscription: 'Subscription',
+  Project: 'Project',
+  Invoice: 'Invoice',
   OtpCode: 'OtpCode'
 } as const
 
@@ -105,8 +107,49 @@ export const SubscriptionScalarFieldEnum = {
 export type SubscriptionScalarFieldEnum = (typeof SubscriptionScalarFieldEnum)[keyof typeof SubscriptionScalarFieldEnum]
 
 
+export const ProjectScalarFieldEnum = {
+  id: 'id',
+  userId: 'userId',
+  name: 'name',
+  description: 'description',
+  status: 'status',
+  storageUsed: 'storageUsed',
+  filesCount: 'filesCount',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type ProjectScalarFieldEnum = (typeof ProjectScalarFieldEnum)[keyof typeof ProjectScalarFieldEnum]
+
+
+export const InvoiceScalarFieldEnum = {
+  id: 'id',
+  userId: 'userId',
+  stripeInvoiceId: 'stripeInvoiceId',
+  stripeCustomerId: 'stripeCustomerId',
+  stripeSubscriptionId: 'stripeSubscriptionId',
+  amountDue: 'amountDue',
+  amountPaid: 'amountPaid',
+  currency: 'currency',
+  status: 'status',
+  invoiceUrl: 'invoiceUrl',
+  hostedInvoiceUrl: 'hostedInvoiceUrl',
+  periodStart: 'periodStart',
+  periodEnd: 'periodEnd',
+  dueDate: 'dueDate',
+  paidAt: 'paidAt',
+  voidedAt: 'voidedAt',
+  description: 'description',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type InvoiceScalarFieldEnum = (typeof InvoiceScalarFieldEnum)[keyof typeof InvoiceScalarFieldEnum]
+
+
 export const OtpCodeScalarFieldEnum = {
   id: 'id',
+  userId: 'userId',
   email: 'email',
   code: 'code',
   expiresAt: 'expiresAt',

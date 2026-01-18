@@ -4,8 +4,10 @@ import * as React from "react"
 import {
   IconChartBar,
   IconDashboard,
-  IconInnerShadowTop,
   IconCreditCard,
+  IconFolder,
+  IconFileInvoice,
+  IconSettings,
 } from "@tabler/icons-react"
 
 import { NavMain } from "@/components/nav-main"
@@ -20,6 +22,7 @@ import {
   SidebarMenuItem,
 } from "@/components/ui/sidebar"
 import { useAuth } from "@/hooks/use-auth"
+import { LogoIcon } from "@/components/logo"
 
 const data = {
   navMain: [
@@ -29,14 +32,29 @@ const data = {
       icon: IconDashboard,
     },
     {
+      title: "Mes Projets",
+      url: "/dashboard/projects",
+      icon: IconFolder,
+    },
+    {
+      title: "Mes Factures",
+      url: "/dashboard/invoices",
+      icon: IconFileInvoice,
+    },
+    {
       title: "Statistiques",
-      url: "/analytics",
+      url: "/dashboard/analytics",
       icon: IconChartBar,
     },
     {
       title: "Plans d'abonnement",
       url: "/pricing",
       icon: IconCreditCard,
+    },
+    {
+      title: "Parametres",
+      url: "/dashboard/settings",
+      icon: IconSettings,
     },
   ],
 }
@@ -52,25 +70,25 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
 
   return (
     <Sidebar collapsible="offcanvas" {...props}>
-      <SidebarHeader>
+      <SidebarHeader className="border-b border-sidebar-border">
         <SidebarMenu>
           <SidebarMenuItem>
             <SidebarMenuButton
               asChild
-              className="data-[slot=sidebar-menu-button]:!p-1.5"
+              className="data-[slot=sidebar-menu-button]:!p-2 hover:bg-sidebar-accent"
             >
-              <a href="/dashboard">
-                <IconInnerShadowTop className="!size-5" />
-                <span className="text-base font-semibold">CloudStorage</span>
+              <a href="/dashboard" className="flex items-center gap-2.5">
+                <LogoIcon className="!size-7" />
+                <span className="text-base font-bold gradient-text">CloudStorage</span>
               </a>
             </SidebarMenuButton>
           </SidebarMenuItem>
         </SidebarMenu>
       </SidebarHeader>
-      <SidebarContent>
+      <SidebarContent className="px-2 py-4">
         <NavMain items={data.navMain} />
       </SidebarContent>
-      <SidebarFooter>
+      <SidebarFooter className="border-t border-sidebar-border">
         <NavUser user={userData} />
       </SidebarFooter>
     </Sidebar>

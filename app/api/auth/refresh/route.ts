@@ -7,6 +7,7 @@ import {
   setAuthCookies,
   getRefreshToken,
 } from '@/lib/jwt';
+import { checkRateLimit, RATE_LIMITS, getClientIp } from '@/lib/rate-limit';
 
 /**
  * POST /api/auth/refresh
@@ -16,6 +17,20 @@ import {
  */
 export async function POST(request: NextRequest) {
   try {
+    // Rate limiting pour éviter les abus
+    const clientIp = getClientIp(request);
+    const rateLimitResult = await checkRateLimit(`refresh:${clientIp}`, RATE_LIMITS.REFRESH);
+
+    if (!rateLimitResult.success) {
+      return NextResponse.json(
+        {
+          error: `Trop de requêtes. Réessayez dans ${rateLimitResult.retryAfter} secondes.`,
+          retryAfter: rateLimitResult.retryAfter,
+        },
+        { status: 429 }
+      );
+    }
+
     const refreshToken = await getRefreshToken();
 
     if (!refreshToken) {

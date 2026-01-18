@@ -2,9 +2,17 @@ import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 import { jwtVerify } from 'jose';
 
-const JWT_SECRET = new TextEncoder().encode(
-  process.env.JWT_SECRET || 'your-super-secret-key-change-in-production'
-);
+// Doit correspondre à la clé dans lib/jwt.ts
+const getJwtSecret = () => {
+  const secret = process.env.JWT_SECRET;
+  if (!secret) {
+    // Clé par défaut en développement (identique à lib/jwt.ts)
+    return 'dev-secret-key-do-not-use-in-production-min32chars';
+  }
+  return secret;
+};
+
+const JWT_SECRET = new TextEncoder().encode(getJwtSecret());
 
 // Routes protégées nécessitant une authentification
 const protectedRoutes = ['/dashboard', '/analytics', '/settings'];

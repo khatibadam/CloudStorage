@@ -3,6 +3,9 @@ import { stripe, SUBSCRIPTION_PLANS } from '@/lib/stripe';
 import { prisma } from '@/lib/prisma';
 import Stripe from 'stripe';
 
+// Store pour l'idempotence des webhooks (en production, utiliser Redis)
+const processedEvents = new Set<string>();
+
 export async function POST(req: NextRequest) {
   const body = await req.text();
   const signature = req.headers.get('stripe-signature');
@@ -22,12 +25,19 @@ export async function POST(req: NextRequest) {
       signature,
       process.env.STRIPE_WEBHOOK_SECRET || ''
     );
-  } catch (err: any) {
-    console.error('Erreur webhook:', err.message);
+  } catch (err: unknown) {
+    const errorMessage = err instanceof Error ? err.message : 'Erreur inconnue';
+    console.error('Erreur webhook:', errorMessage);
     return NextResponse.json(
-      { error: `Webhook Error: ${err.message}` },
+      { error: `Webhook Error: ${errorMessage}` },
       { status: 400 }
     );
+  }
+
+  // Vérification d'idempotence pour éviter le double traitement
+  if (processedEvents.has(event.id)) {
+    console.log(`Événement déjà traité: ${event.id}`);
+    return NextResponse.json({ received: true, duplicate: true });
   }
 
   try {
@@ -51,6 +61,13 @@ export async function POST(req: NextRequest) {
         break;
       }
 
+      // Gestion des factures - GÉNÉRATION
+      case 'invoice.finalized': {
+        const invoice = event.data.object as Stripe.Invoice;
+        await handleInvoiceCreated(invoice);
+        break;
+      }
+
       case 'invoice.payment_succeeded': {
         const invoice = event.data.object as Stripe.Invoice;
         await handleInvoicePaymentSucceeded(invoice);
@@ -63,13 +80,37 @@ export async function POST(req: NextRequest) {
         break;
       }
 
+      // Gestion des factures - ANNULATION
+      case 'invoice.voided': {
+        const invoice = event.data.object as Stripe.Invoice;
+        await handleInvoiceVoided(invoice);
+        break;
+      }
+
+      // Gestion des avoirs (credit notes)
+      case 'credit_note.created': {
+        const creditNote = event.data.object as Stripe.CreditNote;
+        await handleCreditNoteCreated(creditNote);
+        break;
+      }
+
       default:
         console.log(`Événement non géré: ${event.type}`);
     }
 
+    // Marquer l'événement comme traité
+    processedEvents.add(event.id);
+
+    // Nettoyage des anciens événements (garder les 1000 derniers)
+    if (processedEvents.size > 1000) {
+      const iterator = processedEvents.values();
+      processedEvents.delete(iterator.next().value as string);
+    }
+
     return NextResponse.json({ received: true });
-  } catch (error: any) {
-    console.error('Erreur traitement webhook:', error);
+  } catch (error: unknown) {
+    const errorMessage = error instanceof Error ? error.message : 'Erreur inconnue';
+    console.error('Erreur traitement webhook:', errorMessage);
     return NextResponse.json(
       { error: 'Erreur serveur' },
       { status: 500 }
@@ -219,7 +260,108 @@ async function handleInvoicePaymentFailed(invoice: Stripe.Invoice) {
       where: { userId: user.id_user },
       data: { status: 'PAST_DUE' },
     });
+
+    // Mettre à jour le statut de la facture en BDD
+    await prisma.invoice.updateMany({
+      where: { stripeInvoiceId: invoice.id },
+      data: { status: 'OPEN' }, // Reste ouverte car paiement échoué
+    });
   }
 }
 
+/**
+ * Gestion de la création/finalisation d'une facture
+ * Appelé quand une facture est finalisée et prête à être payée
+ */
+async function handleInvoiceCreated(invoice: Stripe.Invoice) {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const invoiceData = invoice as any;
+  const customerId = typeof invoiceData.customer === 'string'
+    ? invoiceData.customer
+    : invoiceData.customer?.id || '';
+  const subscriptionId = invoiceData.subscription
+    ? (typeof invoiceData.subscription === 'string'
+        ? invoiceData.subscription
+        : invoiceData.subscription?.id || null)
+    : null;
 
+  const user = await prisma.user.findUnique({
+    where: { stripeCustomerId: customerId },
+  });
+
+  if (!user) {
+    console.error('Utilisateur non trouvé pour le customer:', customerId);
+    return;
+  }
+
+  // Créer ou mettre à jour la facture en BDD
+  await prisma.invoice.upsert({
+    where: { stripeInvoiceId: invoice.id },
+    create: {
+      userId: user.id_user,
+      stripeInvoiceId: invoice.id,
+      stripeCustomerId: customerId,
+      stripeSubscriptionId: subscriptionId,
+      amountDue: invoice.amount_due,
+      amountPaid: invoice.amount_paid,
+      currency: invoice.currency,
+      status: 'OPEN',
+      invoiceUrl: invoice.invoice_pdf || null,
+      hostedInvoiceUrl: invoice.hosted_invoice_url || null,
+      periodStart: invoice.period_start ? new Date(invoice.period_start * 1000) : null,
+      periodEnd: invoice.period_end ? new Date(invoice.period_end * 1000) : null,
+      dueDate: invoice.due_date ? new Date(invoice.due_date * 1000) : null,
+      description: invoice.description || `Facture ${invoice.number || invoice.id}`,
+    },
+    update: {
+      amountDue: invoice.amount_due,
+      amountPaid: invoice.amount_paid,
+      status: 'OPEN',
+      invoiceUrl: invoice.invoice_pdf || null,
+      hostedInvoiceUrl: invoice.hosted_invoice_url || null,
+    },
+  });
+
+  console.log(`Facture créée/mise à jour: ${invoice.id} pour l'utilisateur ${user.id_user}`);
+}
+
+/**
+ * Gestion de l'annulation d'une facture
+ */
+async function handleInvoiceVoided(invoice: Stripe.Invoice) {
+  const voidedAt = invoice.status_transitions?.voided_at
+    ? new Date(invoice.status_transitions.voided_at * 1000)
+    : new Date();
+
+  await prisma.invoice.updateMany({
+    where: { stripeInvoiceId: invoice.id },
+    data: {
+      status: 'VOID',
+      voidedAt,
+    },
+  });
+
+  console.log(`Facture annulée: ${invoice.id}`);
+}
+
+/**
+ * Gestion de la création d'un avoir (credit note)
+ */
+async function handleCreditNoteCreated(creditNote: Stripe.CreditNote) {
+  // Marquer la facture associée comme ayant un avoir
+  const invoiceId = creditNote.invoice as string;
+
+  if (invoiceId) {
+    // On pourrait créer une table CreditNote séparée si nécessaire
+    // Pour l'instant, on marque juste la facture comme remboursée
+    await prisma.invoice.updateMany({
+      where: { stripeInvoiceId: invoiceId },
+      data: {
+        status: 'VOID',
+        voidedAt: new Date(),
+      },
+    });
+
+    console.log(`Avoir créé pour la facture: ${invoiceId}, montant: ${creditNote.amount / 100}€`);
+  }
+}

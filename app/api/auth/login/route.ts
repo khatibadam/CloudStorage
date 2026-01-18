@@ -3,6 +3,7 @@ import { prisma } from '@/lib/prisma';
 import { ArgonVerify } from '@/lib/argon2i';
 import { generateAccessToken, generateRefreshToken, setAuthCookies } from '@/lib/jwt';
 import { z } from 'zod';
+import { checkRateLimit, RATE_LIMITS, getClientIp } from '@/lib/rate-limit';
 
 const loginSchema = z.object({
   email: z.string().email('Email invalide'),
@@ -18,6 +19,27 @@ const loginSchema = z.object({
  */
 export async function POST(request: NextRequest) {
   try {
+    // Rate limiting pour éviter les attaques par brute force
+    const clientIp = getClientIp(request);
+    const rateLimitResult = await checkRateLimit(`login:${clientIp}`, RATE_LIMITS.LOGIN);
+
+    if (!rateLimitResult.success) {
+      return NextResponse.json(
+        {
+          error: `Trop de tentatives de connexion. Réessayez dans ${rateLimitResult.retryAfter} secondes.`,
+          retryAfter: rateLimitResult.retryAfter,
+        },
+        {
+          status: 429,
+          headers: {
+            'Retry-After': String(rateLimitResult.retryAfter),
+            'X-RateLimit-Remaining': '0',
+            'X-RateLimit-Reset': String(rateLimitResult.resetAt),
+          },
+        }
+      );
+    }
+
     const body = await request.json();
 
     // Validation avec Zod

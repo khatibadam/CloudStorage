@@ -50,6 +50,16 @@ export type User = Prisma.UserModel
  */
 export type Subscription = Prisma.SubscriptionModel
 /**
+ * Model Project
+ * 
+ */
+export type Project = Prisma.ProjectModel
+/**
+ * Model Invoice
+ * 
+ */
+export type Invoice = Prisma.InvoiceModel
+/**
  * Model OtpCode
  * 
  */
