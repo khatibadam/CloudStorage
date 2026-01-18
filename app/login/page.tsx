@@ -1,6 +1,7 @@
 import { LoginForm } from "@/components/login-form"
 import { Logo } from "@/components/logo"
 import Link from "next/link"
+import { Check } from "lucide-react"
 
 export default function Page() {
   return (
@@ -24,13 +25,30 @@ export default function Page() {
             <span className="text-xl font-bold">CloudStorage</span>
           </Link>
 
-          <div className="space-y-6">
-            <blockquote className="text-2xl font-light leading-relaxed">
-              "CloudStorage a transforme notre facon de gerer nos fichiers. Simple, securise et incroyablement rapide."
-            </blockquote>
+          <div className="space-y-8">
             <div>
-              <p className="font-semibold">Marie Dupont</p>
-              <p className="text-white/70">Directrice Marketing, TechCorp</p>
+              <h2 className="text-3xl font-bold mb-4">
+                Bon retour parmi nous
+              </h2>
+              <p className="text-white/80 text-lg">
+                Accedez a vos fichiers en toute securite
+              </p>
+            </div>
+
+            <div className="space-y-4">
+              {[
+                "Acces securise a vos fichiers",
+                "Synchronisation instantanee",
+                "Chiffrement de bout en bout",
+                "Disponibilite 99.9%",
+              ].map((feature, index) => (
+                <div key={index} className="flex items-center gap-3">
+                  <div className="h-6 w-6 rounded-full bg-white/20 flex items-center justify-center">
+                    <Check className="h-4 w-4" />
+                  </div>
+                  <span>{feature}</span>
+                </div>
+              ))}
             </div>
           </div>
 

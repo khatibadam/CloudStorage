@@ -103,15 +103,7 @@ export default function HomePage() {
       {/* Hero Section */}
       <section className="container mx-auto px-4 pt-20 pb-32">
         <div className="max-w-4xl mx-auto text-center">
-          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 text-primary text-sm font-medium mb-8">
-            <span className="relative flex h-2 w-2">
-              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75"></span>
-              <span className="relative inline-flex rounded-full h-2 w-2 bg-primary"></span>
-            </span>
-            Nouveau : 5 Go gratuits pour demarrer
-          </div>
-
-          <h1 className="text-5xl md:text-7xl font-bold mb-6 leading-tight">
+<h1 className="text-5xl md:text-7xl font-bold mb-6 leading-tight">
             Stockez vos fichiers
             <span className="block gradient-text">en toute securite</span>
           </h1>
