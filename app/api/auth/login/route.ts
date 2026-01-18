@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { ArgonVerify } from '@/lib/argon2i';
-import { generateAccessToken, generateRefreshToken, setAuthCookies } from '@/lib/jwt';
+import { generateAccessToken, generateRefreshToken } from '@/lib/jwt';
 import { z } from 'zod';
 import { checkRateLimit, RATE_LIMITS, getClientIp } from '@/lib/rate-limit';
 
@@ -88,11 +88,8 @@ export async function POST(request: NextRequest) {
       email: user.email,
     });
 
-    // Définition des cookies httpOnly
-    await setAuthCookies(accessToken, refreshToken);
-
-    // Réponse avec les données utilisateur (sans le mot de passe)
-    return NextResponse.json({
+    // Création de la réponse avec les données utilisateur
+    const response = NextResponse.json({
       success: true,
       user: {
         id_user: user.id_user,
@@ -107,6 +104,27 @@ export async function POST(request: NextRequest) {
         storageUsed: user.subscription.storageUsed.toString(),
       } : null,
     });
+
+    // Définition des cookies httpOnly directement sur la réponse
+    const isProduction = process.env.NODE_ENV === 'production';
+
+    response.cookies.set('access_token', accessToken, {
+      httpOnly: true,
+      secure: isProduction,
+      sameSite: 'lax',
+      maxAge: 15 * 60, // 15 minutes
+      path: '/',
+    });
+
+    response.cookies.set('refresh_token', refreshToken, {
+      httpOnly: true,
+      secure: isProduction,
+      sameSite: 'lax',
+      maxAge: 7 * 24 * 60 * 60, // 7 jours
+      path: '/',
+    });
+
+    return response;
 
   } catch (error) {
     console.error('Erreur lors de la connexion:', error);

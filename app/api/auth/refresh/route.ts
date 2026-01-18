@@ -4,8 +4,6 @@ import {
   verifyToken,
   generateAccessToken,
   generateRefreshToken,
-  setAuthCookies,
-  getRefreshToken,
 } from '@/lib/jwt';
 import { checkRateLimit, RATE_LIMITS, getClientIp } from '@/lib/rate-limit';
 
@@ -31,7 +29,8 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const refreshToken = await getRefreshToken();
+    // Récupérer le refresh token depuis les cookies de la requête
+    const refreshToken = request.cookies.get('refresh_token')?.value;
 
     if (!refreshToken) {
       return NextResponse.json(
@@ -74,10 +73,8 @@ export async function POST(request: NextRequest) {
       email: user.email,
     });
 
-    // Mise à jour des cookies
-    await setAuthCookies(newAccessToken, newRefreshToken);
-
-    return NextResponse.json({
+    // Création de la réponse
+    const response = NextResponse.json({
       success: true,
       user: {
         id_user: user.id_user,
@@ -90,6 +87,27 @@ export async function POST(request: NextRequest) {
         status: user.subscription.status,
       } : null,
     });
+
+    // Mise à jour des cookies directement sur la réponse
+    const isProduction = process.env.NODE_ENV === 'production';
+
+    response.cookies.set('access_token', newAccessToken, {
+      httpOnly: true,
+      secure: isProduction,
+      sameSite: 'lax',
+      maxAge: 15 * 60, // 15 minutes
+      path: '/',
+    });
+
+    response.cookies.set('refresh_token', newRefreshToken, {
+      httpOnly: true,
+      secure: isProduction,
+      sameSite: 'lax',
+      maxAge: 7 * 24 * 60 * 60, // 7 jours
+      path: '/',
+    });
+
+    return response;
 
   } catch (error) {
     console.error('Erreur lors du refresh:', error);

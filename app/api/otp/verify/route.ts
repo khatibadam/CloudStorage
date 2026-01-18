@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
-import { generateAccessToken, generateRefreshToken, setAuthCookies } from '@/lib/jwt';
+import { generateAccessToken, generateRefreshToken } from '@/lib/jwt';
 import { z } from 'zod';
 
 const verifyOtpSchema = z.object({
@@ -90,10 +90,8 @@ export async function POST(request: NextRequest) {
       email: user.email,
     });
 
-    // Définition des cookies httpOnly
-    await setAuthCookies(accessToken, refreshToken);
-
-    return NextResponse.json({
+    // Création de la réponse avec les cookies
+    const response = NextResponse.json({
       success: true,
       message: 'Code vérifié avec succès',
       user: {
@@ -107,6 +105,27 @@ export async function POST(request: NextRequest) {
         status: user.subscription.status,
       } : null,
     });
+
+    // Définition des cookies httpOnly directement sur la réponse
+    const isProduction = process.env.NODE_ENV === 'production';
+
+    response.cookies.set('access_token', accessToken, {
+      httpOnly: true,
+      secure: isProduction,
+      sameSite: 'lax',
+      maxAge: 15 * 60, // 15 minutes
+      path: '/',
+    });
+
+    response.cookies.set('refresh_token', refreshToken, {
+      httpOnly: true,
+      secure: isProduction,
+      sameSite: 'lax',
+      maxAge: 7 * 24 * 60 * 60, // 7 jours
+      path: '/',
+    });
+
+    return response;
 
   } catch (error) {
     console.error('Erreur lors de la vérification de l\'OTP:', error);
