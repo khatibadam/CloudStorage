@@ -1,9 +1,24 @@
 import { SignJWT, jwtVerify, JWTPayload } from 'jose';
 import { cookies } from 'next/headers';
 
-const JWT_SECRET = new TextEncoder().encode(
-  process.env.JWT_SECRET || 'your-super-secret-key-change-in-production'
-);
+// Vérification de sécurité : JWT_SECRET doit être défini en production
+const getJwtSecret = () => {
+  const secret = process.env.JWT_SECRET;
+
+  if (!secret && process.env.NODE_ENV === 'production') {
+    throw new Error('JWT_SECRET environment variable is required in production.');
+  }
+
+  // En développement, utiliser une clé par défaut si non définie (avec warning)
+  if (!secret) {
+    console.warn('⚠️  JWT_SECRET non défini - utilisation d\'une clé par défaut (DEV uniquement)');
+    return 'dev-secret-key-do-not-use-in-production-min32chars';
+  }
+
+  return secret;
+};
+
+const JWT_SECRET = new TextEncoder().encode(getJwtSecret());
 
 const ACCESS_TOKEN_EXPIRY = '15m';
 const REFRESH_TOKEN_EXPIRY = '7d';

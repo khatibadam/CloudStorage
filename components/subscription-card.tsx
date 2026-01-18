@@ -52,9 +52,11 @@ export function SubscriptionCard({ userId }: { userId: string }) {
       setLoading(false);
       return;
     }
-    
+
     try {
-      const response = await fetch(`/api/subscription?userId=${userId}`);
+      const response = await fetch(`/api/subscription?userId=${userId}`, {
+        credentials: 'include',
+      });
       if (response.ok) {
         const data = await response.json();
         setSubscription(data);
@@ -74,6 +76,7 @@ export function SubscriptionCard({ userId }: { userId: string }) {
         headers: {
           'Content-Type': 'application/json',
         },
+        credentials: 'include',
         body: JSON.stringify({ userId }),
       });
 
@@ -103,6 +106,7 @@ export function SubscriptionCard({ userId }: { userId: string }) {
         headers: {
           'Content-Type': 'application/json',
         },
+        credentials: 'include',
         body: JSON.stringify({ userId }),
       });
 

@@ -10,5 +10,7 @@
  */
 export type * from './models/User'
 export type * from './models/Subscription'
+export type * from './models/Project'
+export type * from './models/Invoice'
 export type * from './models/OtpCode'
 export type * from './commonInputTypes'

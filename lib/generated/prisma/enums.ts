@@ -9,6 +9,26 @@
 * 🟢 You can import this file directly.
 */
 
+export const ProjectStatus = {
+  ACTIVE: 'ACTIVE',
+  ARCHIVED: 'ARCHIVED',
+  DELETED: 'DELETED'
+} as const
+
+export type ProjectStatus = (typeof ProjectStatus)[keyof typeof ProjectStatus]
+
+
+export const InvoiceStatus = {
+  DRAFT: 'DRAFT',
+  OPEN: 'OPEN',
+  PAID: 'PAID',
+  VOID: 'VOID',
+  UNCOLLECTIBLE: 'UNCOLLECTIBLE'
+} as const
+
+export type InvoiceStatus = (typeof InvoiceStatus)[keyof typeof InvoiceStatus]
+
+
 export const PlanType = {
   FREE: 'FREE',
   STANDARD: 'STANDARD',

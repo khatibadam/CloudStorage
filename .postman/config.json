@@ -1,0 +1,15 @@
+{
+  "workspace": {
+    "id": "0a2f1f62-e0ef-4b8c-a4d3-ef5ce566ae8f"
+  },
+  "entities": {
+    "collections": [
+      "..\\docs\\CloudStorage-API.postman_collection.json"
+    ],
+    "environments": [],
+    "specs": [],
+    "flows": [],
+    "globals": [],
+    "mocks": []
+  }
+}

@@ -64,6 +64,7 @@ export function OTPForm({ ...props }: React.ComponentProps<typeof Card>) {
         headers: {
           'Content-Type': 'application/json',
         },
+        credentials: 'include',
         body: JSON.stringify({ email, code }),
       })
 
@@ -99,6 +100,7 @@ export function OTPForm({ ...props }: React.ComponentProps<typeof Card>) {
         headers: {
           'Content-Type': 'application/json',
         },
+        credentials: 'include',
         body: JSON.stringify({ email }),
       })
 

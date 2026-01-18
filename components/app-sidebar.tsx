@@ -6,6 +6,9 @@ import {
   IconDashboard,
   IconInnerShadowTop,
   IconCreditCard,
+  IconFolder,
+  IconFileInvoice,
+  IconSettings,
 } from "@tabler/icons-react"
 
 import { NavMain } from "@/components/nav-main"
@@ -29,14 +32,29 @@ const data = {
       icon: IconDashboard,
     },
     {
+      title: "Mes Projets",
+      url: "/dashboard/projects",
+      icon: IconFolder,
+    },
+    {
+      title: "Mes Factures",
+      url: "/dashboard/invoices",
+      icon: IconFileInvoice,
+    },
+    {
       title: "Statistiques",
-      url: "/analytics",
+      url: "/dashboard/analytics",
       icon: IconChartBar,
     },
     {
       title: "Plans d'abonnement",
       url: "/pricing",
       icon: IconCreditCard,
+    },
+    {
+      title: "Paramètres",
+      url: "/dashboard/settings",
+      icon: IconSettings,
     },
   ],
 }

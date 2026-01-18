@@ -2,6 +2,7 @@
 
 import { useEffect } from "react"
 import { useRouter } from "next/navigation"
+import Link from "next/link"
 import { AppSidebar } from "@/components/app-sidebar"
 import {
   Breadcrumb,
@@ -20,7 +21,8 @@ import {
 import { useAuth } from "@/hooks/use-auth"
 import { SubscriptionCard } from "@/components/subscription-card"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { IconFile, IconFolder, IconPhoto, IconMovie } from "@tabler/icons-react"
+import { Button } from "@/components/ui/button"
+import { IconFile, IconFolder, IconPhoto, IconMovie, IconPlus, IconArrowRight } from "@tabler/icons-react"
 
 export default function Page() {
   const { user, isReady } = useAuth()
@@ -117,41 +119,53 @@ export default function Page() {
               </CardContent>
             </Card>
 
-            {/* Activité récente */}
+            {/* Projets récents */}
             <Card>
-              <CardHeader>
-                <CardTitle>Activité récente</CardTitle>
-                <CardDescription>Dernières actions</CardDescription>
+              <CardHeader className="flex flex-row items-center justify-between">
+                <div>
+                  <CardTitle>Projets récents</CardTitle>
+                  <CardDescription>Vos derniers projets</CardDescription>
+                </div>
+                <Link href="/dashboard/projects">
+                  <Button variant="ghost" size="sm">
+                    <IconArrowRight className="h-4 w-4" />
+                  </Button>
+                </Link>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="flex items-center gap-3">
-                  <div className="h-2 w-2 bg-green-500 rounded-full" />
+                  <div className="p-2 bg-primary/10 rounded-lg">
+                    <IconFolder className="h-5 w-5 text-primary" />
+                  </div>
                   <div className="flex-1">
-                    <p className="text-sm">photo_charliekirk.jpg uploadé</p>
-                    <p className="text-xs text-muted-foreground">Il y a 2 heures</p>
+                    <p className="text-sm font-medium">Site Web Portfolio</p>
+                    <p className="text-xs text-muted-foreground">Modifié il y a 2h</p>
                   </div>
                 </div>
                 <div className="flex items-center gap-3">
-                  <div className="h-2 w-2 bg-blue-500 rounded-full" />
+                  <div className="p-2 bg-primary/10 rounded-lg">
+                    <IconFolder className="h-5 w-5 text-primary" />
+                  </div>
                   <div className="flex-1">
-                    <p className="text-sm">Dossier "Projets" créé</p>
-                    <p className="text-xs text-muted-foreground">Il y a 5 heures</p>
+                    <p className="text-sm font-medium">Application Mobile</p>
+                    <p className="text-xs text-muted-foreground">Modifié hier</p>
                   </div>
                 </div>
                 <div className="flex items-center gap-3">
-                  <div className="h-2 w-2 bg-purple-500 rounded-full" />
+                  <div className="p-2 bg-primary/10 rounded-lg">
+                    <IconFolder className="h-5 w-5 text-primary" />
+                  </div>
                   <div className="flex-1">
-                    <p className="text-sm">video_demo.mp4 partagé</p>
-                    <p className="text-xs text-muted-foreground">Hier</p>
+                    <p className="text-sm font-medium">Design System</p>
+                    <p className="text-xs text-muted-foreground">Modifié il y a 3 jours</p>
                   </div>
                 </div>
-                <div className="flex items-center gap-3">
-                  <div className="h-2 w-2 bg-orange-500 rounded-full" />
-                  <div className="flex-1">
-                    <p className="text-sm">rapport.pdf téléchargé</p>
-                    <p className="text-xs text-muted-foreground">Il y a 2 jours</p>
-                  </div>
-                </div>
+                <Link href="/dashboard/projects" className="block">
+                  <Button variant="outline" className="w-full mt-2">
+                    <IconPlus className="mr-2 h-4 w-4" />
+                    Nouveau projet
+                  </Button>
+                </Link>
               </CardContent>
             </Card>
           </div>
